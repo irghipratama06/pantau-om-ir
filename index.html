@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Meme Radar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#0f2230;--panel:#16303f;--line:#26485a;--tx:#e8f1f5;--mut:#8fa9b6;--amb:#f2b84b;--ok:#5fd0a0;--bad:#ff7a6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 'Familjen Grotesk',system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:30px;margin:0 0 4px;letter-spacing:-.5px}
+.sub{color:var(--mut);margin:0 0 16px}
+.warn{background:#3a2a1c;border:1px solid #6b4a25;color:#ffd9a3;border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:16px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+select,input,button{font:inherit;color:var(--tx);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
+input{width:130px}
+button{background:var(--amb);color:#1b1405;border:0;font-weight:700;cursor:pointer}
+:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
+#onest{font-size:14px;margin:0 0 10px}
+#st{color:var(--mut);font-size:14px;margin:8px 0 12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.nm{font-weight:700;font-size:18px;overflow-wrap:anywhere}
+.ch{color:var(--mut);font-size:13px}
+.sc{text-align:right;min-width:64px}
+.sc b{font-size:28px;color:var(--amb);line-height:1}
+.sc span{display:block;font-size:12px;color:var(--mut)}
+.meter{height:6px;background:var(--bg);border-radius:3px;margin:10px 0}
+.meter i{display:block;height:100%;background:var(--amb);border-radius:3px}
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:14px}
+.g small{display:block;color:var(--mut);font-size:12px}
+.up{color:var(--ok)}.dn{color:var(--bad)}
+.fl{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fl span{font-size:12px;border:1px solid var(--bad);color:var(--bad);border-radius:6px;padding:1px 7px}
+.fl .good{border-color:var(--ok);color:var(--ok)}
+a.lk{display:inline-block;margin-top:10px;color:var(--amb);font-size:14px}
+.chk{margin-top:10px;margin-left:12px;background:transparent;color:var(--amb);border:1px solid var(--amb);font-weight:600;font-size:14px;min-height:34px;padding:4px 10px}
+.sec{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;font-size:14px}
+.sec .v{font-weight:700;margin-bottom:4px}
+.sec .v.ok{color:var(--ok)}.sec .v.warn{color:var(--amb)}.sec .v.bad{color:var(--bad)}
+.sec ul{margin:0;padding-left:18px}.sec li.bad{color:var(--bad)}.sec li.fine{color:var(--mut)}
+.rs{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.rs small,.t small{display:block;color:var(--mut);font-size:12px;font-weight:400}
+.rs b{font-size:30px;line-height:1.1}.rs b span{font-size:14px;color:var(--mut);font-weight:400}
+.rs.low,.rs.low b{border-color:var(--ok);color:var(--ok)}.rs.mid,.rs.high{border-color:var(--amb)}.rs.mid b,.rs.high b{color:var(--amb)}.rs.crit{border-color:var(--bad)}.rs.crit b{color:var(--bad)}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.t{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:13px;font-weight:600;overflow-wrap:anywhere}
+.t.ok{color:var(--ok)}.t.warn{color:var(--amb)}.t.bad{color:var(--bad)}.t.na{color:var(--mut)}
+.src{color:var(--mut);font-size:12px;margin-top:8px}
+.how{color:var(--mut);font-size:13px;margin-top:24px}
+</style>
+</head>
+<body>
+<main>
+<h1>Meme Radar</h1>
+<p class="sub">Pindai token baru yang sedang ramai, urut berdasarkan skor sinyal awal.</p>
+<div class="warn">Skor ini bukan prediksi. Tidak ada alat yang bisa menjamin kenaikan ribuan persen; sebagian besar token baru turun ke nol atau rug pull. Cek sendiri sebelum membeli dan pakai uang yang siap hilang.</div>
+
+<div class="bar">
+<input id="ca" placeholder="Tempel alamat kontrak (CA) token" style="flex:1;min-width:220px;width:auto" aria-label="Alamat kontrak token" autocomplete="off" spellcheck="false">
+<button id="find">Cek token</button>
+</div>
+<div id="onest"></div>
+<div id="one"></div>
+<div class="bar">
+<select id="chain"><option value="">Semua chain</option><option>solana</option><option>base</option><option>bsc</option><option>ethereum</option></select>
+<select id="age"><option value="9999">Semua umur</option><option value="24">Maks 24 jam</option><option value="72" selected>Maks 3 hari</option><option value="168">Maks 7 hari</option></select>
+<input id="liq" type="number" inputmode="numeric" placeholder="Min liquidity $" value="5000" aria-label="Minimum liquidity dalam dolar">
+<select id="sort"><option value="score">Urut skor</option><option value="v1">Volume 1 jam</option><option value="ch1">Naik 1 jam</option><option value="age">Terbaru</option></select>
+<button id="go">Muat ulang</button>
+</div>
+<div id="st"></div>
+<div id="list"></div>
+
+<p class="how">Skor 0–100 menggabungkan: umur token (1–72 jam terbaik), perputaran volume terhadap liquidity, tekanan beli 1 jam, ukuran liquidity, market cap kecil, dan momentum yang belum terlalu telat. Data dari DexScreener, diperbarui saat Anda menekan Muat ulang. Untuk token dari grup atau X, tempel CA-nya di kotak paling atas. Tombol "Cek keamanan kontrak" memeriksa honeypot, pajak jual, hak cetak token, dan otoritas pemilik lewat GoPlus; token berstatus bahaya skornya otomatis diturunkan. Hasil bersih bukan jaminan aman.</p>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const usd=n=>!n?'-':n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+n.toFixed(0);
+const ageTxt=h=>h>=9999?'-':h<1?Math.round(h*60)+' mnt':h<48?h.toFixed(1)+' jam':(h/24).toFixed(1)+' hari';
+const pct=n=>`<span class="${n>=0?'up':'dn'}">${n>=0?'+':''}${(n||0).toFixed(0)}%</span>`;
+let rows=[];
+
+async function j(u){const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+
+function score(p){
+  const liq=p.liquidity?.usd||0,mc=p.marketCap||p.fdv||0,v24=p.volume?.h24||0,v1=p.volume?.h1||0;
+  const age=p.pairCreatedAt?(Date.now()-p.pairCreatedAt)/36e5:9999;
+  const t=p.txns?.h1||{buys:0,sells:0},n=t.buys+t.sells,bp=n?t.buys/n:.5;
+  const c1=p.priceChange?.h1||0,c24=p.priceChange?.h24||0;
+  let s=0;const f=[];
+  s+=age>=1&&age<=72?20:age<1?8:age<=168?10:0;
+  s+=Math.min(20,(v24/Math.max(liq,1))*4);
+  s+=Math.round(bp*15);
+  s+=liq>=50000?15:liq>=15000?10:liq>=5000?5:0;
+  s+=mc>0&&mc<=1e6?15:mc>0&&mc<=5e6?8:mc>0?2:0;
+  s+=c1>0&&c1<100?10:c1>=100?4:0;
+  s+=n>=50?5:0;
+  if(liq<5000)f.push('Liquidity tipis');
+  if(age<1)f.push('Baru dibuat');
+  if(n>=10&&bp<.45)f.push('Jual lebih banyak');
+  if(mc>0&&liq/mc<.02)f.push('Liquidity kecil vs market cap');
+  if(!(p.info?.socials?.length||p.info?.websites?.length))f.push('Tanpa sosial/website');
+  if(c24>1000)f.push('Sudah naik tinggi, mungkin telat');
+  const good=[];
+  if(bp>=.6&&n>=30)good.push('Dominan beli');
+  if(v24/Math.max(liq,1)>=3)good.push('Volume ramai');
+  return{p,liq,mc,v1,age,c1,c24,bp,n,flags:f,good,score:Math.min(100,Math.round(s))};
+}
+
+async function load(){
+  $('#st').textContent='Memuat data…';$('#list').innerHTML='';
+  try{
+    const [a,b]=await Promise.all([j('https://api.dexscreener.com/token-profiles/latest/v1'),j('https://api.dexscreener.com/token-boosts/latest/v1')]);
+    const by={};
+    [...a,...b].forEach(t=>{(by[t.chainId]??=new Set()).add(t.tokenAddress)});
+    const calls=[];
+    for(const [c,s] of Object.entries(by)){const arr=[...s];for(let i=0;i<arr.length;i+=30)calls.push(j(`https://api.dexscreener.com/tokens/v1/${c}/${arr.slice(i,i+30).join(',')}`).catch(()=>[]))}
+    const res=(await Promise.all(calls)).flat();
+    const best={};
+    res.forEach(p=>{const k=p.chainId+p.baseToken.address;if(!best[k]||(p.liquidity?.usd||0)>(best[k].liquidity?.usd||0))best[k]=p});
+    rows=Object.values(best).map(score);
+    render();
+  }catch(e){$('#st').textContent='Gagal memuat data ('+e.message+'). Periksa koneksi lalu tekan Muat ulang.'}
+}
+
+function cardHtml(x){const p=x.p;return `<div class="card">
+  <div class="top"><div><div class="nm">${esc(p.baseToken.symbol)} <span class="ch">${esc(p.baseToken.name)}</span></div><div class="ch">${esc(p.chainId)} · ${ageTxt(x.age)}</div></div>
+  <div class="sc"><b>${x.score}</b><span>skor</span></div></div>
+  <div class="meter"><i style="width:${x.score}%"></i></div>
+  <div class="g"><div><small>Market cap</small>${usd(x.mc)}</div><div><small>Liquidity</small>${usd(x.liq)}</div><div><small>Volume 1 jam</small>${usd(x.v1)}</div>
+  <div><small>Harga 1 jam</small>${pct(x.c1)}</div><div><small>Harga 24 jam</small>${pct(x.c24)}</div><div><small>Beli 1 jam</small>${x.n?Math.round(x.bp*100)+'%':'-'}</div></div>
+  <div class="fl">${x.good.map(g=>`<span class="good">${esc(g)}</span>`).join('')}${x.flags.map(g=>`<span>${esc(g)}</span>`).join('')}</div>
+  <a class="lk" href="${esc(p.url)}" target="_blank" rel="noopener">Buka di DexScreener</a>${secBtn(x)}${secHtml(x)}</div>`}
+
+function render(){
+  const ch=$('#chain').value,age=+$('#age').value,ml=+$('#liq').value||0,so=$('#sort').value;
+  let r=rows.filter(x=>(!ch||x.p.chainId===ch)&&x.age<=age&&x.liq>=ml);
+  const key={score:x=>-x.score,v1:x=>-x.v1,ch1:x=>-x.c1,age:x=>x.age}[so];
+  r.sort((a,b)=>key(a)-key(b));
+  $('#st').textContent=r.length?`${r.length} token cocok dari ${rows.length} yang dipindai.`:'Tidak ada token yang cocok. Longgarkan filter umur atau liquidity.';
+  $('#list').innerHTML=r.slice(0,40).map(cardHtml).join('');
+}
+
+const EVM={ethereum:1,bsc:56,base:8453,arbitrum:42161,polygon:137,optimism:10,avalanche:43114};
+const keyOf=x=>x.p.chainId+':'+x.p.baseToken.address;
+
+async function check(x){
+  const c=x.p.chainId,a=x.p.baseToken.address,rows=[];let risk=0,src='',fatal=false;
+  const ico={ok:'✓ ',warn:'⚠ ',bad:'❌ ',na:'– '};
+  const R=(k,v,lv,pts)=>{rows.push({k,v:ico[lv]+v,lv});risk+=pts||0};
+  const y=v=>String(v)==='1',tx=v=>(v===''||v==null||isNaN(+v))?null:+v*100;
+  const taxRow=(k,t,lim)=>t==null?R(k,'TIDAK DIKETAHUI','na',5):R(k,t.toFixed(1)+'%',t>10?'bad':t>5?'warn':'ok',t>=50?(fatal=true,40):t>10?lim:0);
+  const liqRow=()=>R('LIQUIDITY',usd(x.liq),x.liq<5000?'bad':x.liq<20000?'warn':'ok',x.liq<5000?15:x.liq<20000?8:0);
+  try{
+    if(EVM[c]){
+      src='GoPlus';
+      const d=await j(`https://api.gopluslabs.io/api/v1/token_security/${EVM[c]}?contract_addresses=${a}`);
+      const r=d.result&&d.result[a.toLowerCase()];
+      if(!r)throw new Error('Data keamanan belum tersedia untuk token ini');
+      const hp=y(r.is_honeypot),cs=y(r.cannot_sell_all);
+      if(hp||cs)fatal=true;
+      R('HONEYPOT',hp?'SELL GAGAL (honeypot)':cs?'TIDAK BISA JUAL SEMUA':'LOLOS SIMULASI',hp||cs?'bad':'ok',hp?60:cs?40:0);
+      taxRow('BUY TAX',tx(r.buy_tax),10);taxRow('SELL TAX',tx(r.sell_tax),15);
+      R('MINT',y(r.is_mintable)?'ENABLED':'TIDAK ADA',y(r.is_mintable)?'warn':'ok',y(r.is_mintable)?15:0);
+      R('BLACKLIST',y(r.is_blacklisted)?'TERDETEKSI':'TIDAK ADA',y(r.is_blacklisted)?'bad':'ok',y(r.is_blacklisted)?10:0);
+      R('PROXY',y(r.is_proxy)?'YA':'TIDAK',y(r.is_proxy)?'warn':'ok',y(r.is_proxy)?10:0);
+      if(r.is_open_source!==undefined)R('OPEN SOURCE',y(r.is_open_source)?'YA':'TIDAK',y(r.is_open_source)?'ok':'warn',y(r.is_open_source)?0:10);
+      const oc=[];if(y(r.hidden_owner))oc.push('owner tersembunyi');if(y(r.can_take_back_ownership))oc.push('bisa ambil alih');if(y(r.transfer_pausable))oc.push('transfer bisa dipause');if(y(r.slippage_modifiable))oc.push('pajak bisa diubah');
+      R('KONTROL OWNER',oc.length?oc.join(', '):'TIDAK ADA',oc.length?'bad':'ok',oc.length*10);
+      liqRow();
+      const lp=r.lp_holders;
+      if(Array.isArray(lp)&&lp.length){const lk=lp.filter(h=>y(h.is_locked)||/dead|null|burn/i.test(h.tag||'')).reduce((s,h)=>s+(+h.percent||0),0)*100;
+        R('LP LOCK',lk.toFixed(0)+'% terkunci/dibakar',lk<50?'bad':lk<90?'warn':'ok',lk<50?25:lk<90?10:0)}
+      else R('LP LOCK','TIDAK DIKETAHUI','na',8);
+      const hs=Array.isArray(r.holders)?r.holders.filter(h=>!y(h.is_contract)&&!/dead|null|burn/i.test(h.tag||'')).slice(0,10):null;
+      if(hs&&hs.length){const t=hs.reduce((s,h)=>s+(+h.percent||0),0)*100;R('TOP 10 HOLDERS',t.toFixed(1)+'%',t>50?'bad':t>30?'warn':'ok',t>50?20:t>30?10:0)}
+      else R('TOP 10 HOLDERS','TIDAK DIKETAHUI','na',5);
+      const cp=tx(r.creator_percent),sc=y(r.honeypot_with_same_creator);
+      if(cp==null&&!sc)R('DEPLOYER','TIDAK DIKETAHUI','na',0);
+      else R('DEPLOYER',(cp!=null?'pegang '+cp.toFixed(1)+'%':'')+(sc?' · pernah buat honeypot':''),sc||cp>10?'bad':cp>3?'warn':'ok',(sc?20:0)+(cp>10?10:0));
+      R('SNIPER','TIDAK TERSEDIA DI EVM','na',0);
+    }else if(c==='solana'){
+      const [g,rc]=await Promise.all([j(`https://api.gopluslabs.io/api/v1/solana/token_security?contract_addresses=${a}`).catch(()=>null),j(`https://api.rugcheck.xyz/v1/tokens/${a}/report`).catch(()=>null)]);
+      const r=g&&g.result&&g.result[a];
+      if(!r&&!rc)throw new Error('Data keamanan belum tersedia untuk token ini');
+      src=[r&&'GoPlus',rc&&'RugCheck'].filter(Boolean).join(' + ')+' · Solana tanpa simulasi jual';
+      const on=o=>!!o&&String(o.status)==='1';
+      const frz=r?on(r.freezable):!!rc.freezeAuthority,mnt=r?on(r.mintable):!!rc.mintAuthority;
+      const rug=!!(rc&&rc.rugged),bm=r&&on(r.balance_mutable_authority);
+      if(rug||frz||bm)fatal=true;
+      R('HONEYPOT',rug?'TOKEN SUDAH RUG':frz?'RISIKO: BISA DIBEKUKAN':bm?'SALDO BISA DIUBAH':'TIDAK TERDETEKSI (bukan simulasi)',rug||frz||bm?'bad':'ok',rug?100:bm?30:0);
+      const tf=rc&&rc.transferFee&&+rc.transferFee.pct,has=tf>0||(r&&r.transfer_fee&&Object.keys(r.transfer_fee).length);
+      R('BUY TAX','0%','ok',0);
+      R('SELL TAX',has?(tf?tf+'% biaya transfer':'ADA BIAYA TRANSFER'):'0%',has?'warn':'ok',has?10:0);
+      R('MINT',mnt?'ENABLED':'DICABUT',mnt?'warn':'ok',mnt?20:0);
+      R('FREEZE',frz?'ENABLED':'DICABUT',frz?'bad':'ok',frz?30:0);
+      R('METADATA',r?(on(r.metadata_mutable)?'BISA DIUBAH':'TETAP'):'TIDAK DIKETAHUI',r?(on(r.metadata_mutable)?'warn':'ok'):'na',r&&on(r.metadata_mutable)?5:0);
+      liqRow();
+      const mk=rc&&Array.isArray(rc.markets)?rc.markets.map(m=>m.lp&&+m.lp.lpLockedPct).filter(v=>!isNaN(v)):[];
+      if(mk.length){const lk=Math.max(...mk);R('LP LOCK',lk.toFixed(0)+'% terkunci/dibakar',lk<50?'bad':lk<90?'warn':'ok',lk<50?25:lk<90?10:0)}
+      else R('LP LOCK','TIDAK DIKETAHUI','na',8);
+      const th=rc&&Array.isArray(rc.topHolders)?rc.topHolders.slice(0,10):null;
+      if(th&&th.length){const t=th.reduce((s,h)=>s+(+h.pct||0),0);R('TOP 10 HOLDERS',t.toFixed(1)+'%',t>50?'bad':t>30?'warn':'ok',t>50?20:t>30?10:0)}
+      else R('TOP 10 HOLDERS','TIDAK DIKETAHUI','na',5);
+      if(rc&&rc.creator){const h=(rc.topHolders||[]).find(h=>h.address===rc.creator||h.owner===rc.creator),p=h?+h.pct:0;
+        R('DEPLOYER',p?'pegang '+p.toFixed(1)+'%':'tidak di top holder',p>10?'bad':p>3?'warn':'ok',p>10?10:0)}
+      else R('DEPLOYER','TIDAK DIKETAHUI','na',0);
+      if(rc){const n=(rc.topHolders||[]).filter(h=>h.insider).length,gi=(rc.graphInsidersDetected||0)>0||(rc.insiderNetworks&&rc.insiderNetworks.length>0);
+        R('SNIPER / INSIDER',n||gi?'TERDETEKSI'+(n?' ('+n+' dompet)':''):'TIDAK TERDETEKSI',n||gi?'warn':'ok',n||gi?15:0)}
+      else R('SNIPER / INSIDER','TIDAK DIKETAHUI','na',0);
+    }else throw new Error('Chain ini belum didukung untuk cek keamanan');
+    risk=Math.min(100,risk);if(fatal)risk=Math.max(risk,80);
+    const lv=risk<25?'low':risk<50?'mid':risk<75?'high':'crit';
+    x.sec={rows,risk,lv,src};
+    if(lv==='crit')x.score=Math.min(x.score,15);
+  }catch(e){x.sec={err:e.message}}
+}
+
+function secBtn(x){
+  if(x.sec&&(x.sec.loading||x.sec.rows))return '';
+  return `<button class="chk" data-k="${esc(keyOf(x))}">${x.sec&&x.sec.err?'Coba cek lagi':'Cek keamanan kontrak'}</button>`;
+}
+function secHtml(x){
+  const s=x.sec;if(!s)return '';
+  if(s.loading)return '<div class="sec">Memeriksa kontrak…</div>';
+  if(s.err)return `<div class="sec"><span class="dn">${esc(s.err)}</span></div>`;
+  const L={low:'🟢 LOW RISK',mid:'🟡 MEDIUM RISK',high:'🟠 HIGH RISK',crit:'🔴 CRITICAL RISK'}[s.lv];
+  return `<div class="sec"><div class="rs ${s.lv}"><small>RISK SCORE</small><b>${s.risk}<span> / 100</span></b><div>${L}</div></div><div class="rg">${s.rows.map(r=>`<div class="t ${r.lv}"><small>${esc(r.k)}</small>${esc(r.v)}</div>`).join('')}</div><div class="src">Sumber: ${esc(s.src)}. Skor risiko makin tinggi makin berbahaya (kebalikan skor sinyal).</div></div>`;
+}
+
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('.chk');if(!b)return;
+  const x=[...rows,one].find(r=>r&&keyOf(r)===b.dataset.k);if(!x)return;
+  x.sec={loading:true};render();renderOne();
+  await check(x);render();renderOne();
+});
+
+let one=null;
+function renderOne(){$('#one').innerHTML=one?cardHtml(one):''}
+async function lookup(){
+  const ca=$('#ca').value.trim();if(!ca)return;
+  one=null;renderOne();$('#onest').textContent='Mencari token…';
+  try{
+    const d=await j('https://api.dexscreener.com/latest/dex/search?q='+encodeURIComponent(ca));
+    const l=ca.toLowerCase();
+    const ps=(d.pairs||[]).filter(p=>p.baseToken.address.toLowerCase()===l);
+    if(!ps.length)throw new Error('Token tidak ditemukan. Pastikan CA benar dan token sudah punya pasar di DEX.');
+    ps.sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0));
+    one=score(ps[0]);one.sec={loading:true};
+    $('#onest').textContent='';renderOne();
+    await check(one);renderOne();
+  }catch(e){$('#onest').innerHTML='<span class="dn">'+esc(e.message)+'</span>'}
+}
+$('#find').onclick=lookup;
+$('#ca').addEventListener('keydown',e=>{if(e.key==='Enter')lookup()});
+
+$('#go').onclick=load;
+['chain','age','liq','sort'].forEach(i=>$('#'+i).addEventListener('input',render));
+load();
+</script>
+</body>
+</html>
